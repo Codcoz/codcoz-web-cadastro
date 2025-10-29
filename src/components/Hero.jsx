@@ -1,7 +1,8 @@
 import React from "react";
 import appPreview from "../assets/app-preview.png";
+import "./Hero.css";
 
-const Hero = () => {
+const Hero = ({ onSignUpClick }) => {
   return (
     <section className="hero">
       <div className="hero-content">
@@ -9,7 +10,9 @@ const Hero = () => {
         <p className="hero-subtitle">
           <span className="highlight">Menos digitação,</span> mais gestão
         </p>
-        <button className="cta">Cadastre sua empresa</button>
+        <button className="cta" onClick={onSignUpClick}>
+          Cadastre sua empresa
+        </button>
       </div>
 
       <div className="hero-image">

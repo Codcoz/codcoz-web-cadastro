@@ -1,17 +1,16 @@
 import React from "react";
 import logo from "../assets/logo.svg";
+import "./Header.css";
 
-const Header = () => {
+const Header = ({ onLogoClick }) => {
   return (
     <header className="header">
-      <div className="logo">
+      <div className="logo" onClick={onLogoClick} style={{ cursor: "pointer" }}>
         <img src={logo} alt="CodCoz logo" />
       </div>
 
       <nav>
-        <a href="#">Login</a>
-        <span>|</span>
-        <a href="#">Nossos contatos</a>
+        <button className="login-button">Login</button>
       </nav>
     </header>
   );
