@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import logo from "../assets/logo.svg";
 import "./SignUp.css";
+import SuccessScreen from "./SuccessScreen";
 
 const SignUp = ({ onBack, onLogoClick }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -70,6 +71,8 @@ const SignUp = ({ onBack, onLogoClick }) => {
   // Estados para API
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleEmpresaChange = (e) => {
     const { id, value } = e.target;
@@ -277,6 +280,32 @@ const SignUp = ({ onBack, onLogoClick }) => {
     }
   };
 
+  const handleSuccessBack = () => {
+    // Volta para a tela inicial e limpa os dados
+    setEmpresaData({
+      nome: "",
+      cnpj: "",
+      capacidade: "",
+      sigla: "",
+      email: "",
+    });
+    setGestorData({
+      nome: "",
+      sobrenome: "",
+      email: "",
+      genero: "",
+    });
+    setCurrentStep(1);
+    setShowSuccess(false);
+    onBack();
+  };
+
+  const handleSuccessLogin = () => {
+    // Aqui você pode implementar a navegação para a tela de login
+    // Por enquanto, vou apenas limpar os dados e voltar
+    handleSuccessBack();
+  };
+
   const handleConcluir = async () => {
     // Valida os campos da empresa e do gestor
     if (!validateEmpresaFields() || !validateGestorFields()) {
@@ -302,24 +331,8 @@ const SignUp = ({ onBack, onLogoClick }) => {
       await criarGestor(empresaId);
       console.log("Gestor criado com sucesso!");
 
-      alert("Cadastro concluído com sucesso!");
-
-      // Limpa os dados e volta para o início
-      setEmpresaData({
-        nome: "",
-        cnpj: "",
-        capacidade: "",
-        sigla: "",
-        email: "",
-      });
-      setGestorData({
-        nome: "",
-        sobrenome: "",
-        email: "",
-        genero: "",
-      });
-      setCurrentStep(1);
-      onBack();
+      // Mostra a tela de sucesso
+      setShowSuccess(true);
     } catch (error) {
       setApiError(error.message || "Erro no cadastro. Tente novamente.");
       console.error("Erro no cadastro:", error);
@@ -327,6 +340,13 @@ const SignUp = ({ onBack, onLogoClick }) => {
       setIsLoading(false);
     }
   };
+
+  // Se estiver mostrando a tela de sucesso, renderiza ela
+  if (showSuccess) {
+    return (
+      <SuccessScreen onLogin={handleSuccessLogin} onBack={handleSuccessBack} />
+    );
+  }
 
   return (
     <div className="signup-container">
