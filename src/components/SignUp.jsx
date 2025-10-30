@@ -3,6 +3,9 @@ import logo from "../assets/logo.svg";
 import "./SignUp.css";
 import SuccessScreen from "./SuccessScreen";
 
+// URL da API - usa variável de ambiente em produção ou proxy em desenvolvimento
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
 const SignUp = ({ onBack, onLogoClick }) => {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -193,7 +196,8 @@ const SignUp = ({ onBack, onLogoClick }) => {
       capacidadeEstoque: parseInt(empresaData.capacidade, 10),
     };
 
-    const response = await fetch("/api/empresa/inserir", {
+    const url = API_BASE_URL ? `${API_BASE_URL}/empresa/inserir` : "/api/empresa/inserir";
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -215,7 +219,8 @@ const SignUp = ({ onBack, onLogoClick }) => {
   const buscarEmpresaPorCnpj = async (cnpj) => {
     const cnpjNumbers = cnpj.replace(/\D/g, "");
 
-    const response = await fetch(`/api/empresa/buscar/${cnpjNumbers}`, {
+    const url = API_BASE_URL ? `${API_BASE_URL}/empresa/buscar/${cnpjNumbers}` : `/api/empresa/buscar/${cnpjNumbers}`;
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -245,7 +250,8 @@ const SignUp = ({ onBack, onLogoClick }) => {
       dataContratacao: getCurrentDate(),
     };
 
-    const response = await fetch("/api/funcionario/inserir", {
+    const url = API_BASE_URL ? `${API_BASE_URL}/funcionario/inserir` : "/api/funcionario/inserir";
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
