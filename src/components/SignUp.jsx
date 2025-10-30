@@ -189,7 +189,7 @@ const SignUp = ({ onBack, onLogoClick }) => {
       nome: empresaData.nome,
       sigla: empresaData.sigla,
       email: empresaData.email,
-      status: "ativo",
+      status: "ATIVO",
       capacidadeEstoque: parseInt(empresaData.capacidade, 10),
     };
 
@@ -240,7 +240,7 @@ const SignUp = ({ onBack, onLogoClick }) => {
       funcaoId: 2,
       nome: gestorData.nome,
       sobrenome: gestorData.sobrenome,
-      status: "ativo",
+      status: "ATIVO",
       email: gestorData.email,
       dataContratacao: getCurrentDate(),
     };
