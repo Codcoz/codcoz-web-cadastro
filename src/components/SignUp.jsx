@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import logo from "../assets/logo.svg";
 import "./SignUp.css";
+import SuccessScreen from "./SuccessScreen";
 
 const SignUp = ({ onBack, onLogoClick }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -66,6 +67,12 @@ const SignUp = ({ onBack, onLogoClick }) => {
   // Erros de validação
   const [empresaErrors, setEmpresaErrors] = useState({});
   const [gestorErrors, setGestorErrors] = useState({});
+
+  // Estados para API
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleEmpresaChange = (e) => {
     const { id, value } = e.target;
@@ -164,6 +171,98 @@ const SignUp = ({ onBack, onLogoClick }) => {
     return isValid;
   };
 
+  // Função para obter a data atual no formato YYYY-MM-DD
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // criar empresa
+  const criarEmpresa = async () => {
+    const cnpjNumbers = empresaData.cnpj.replace(/\D/g, "");
+
+    const empresaPayload = {
+      cnpj: cnpjNumbers,
+      nome: empresaData.nome,
+      sigla: empresaData.sigla,
+      email: empresaData.email,
+      status: "ATIVO",
+      capacidadeEstoque: parseInt(empresaData.capacidade, 10),
+    };
+
+    const response = await fetch("/api/empresa/inserir", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(empresaPayload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Erro ao criar empresa: ${response.status}`
+      );
+    }
+
+    return true;
+  };
+
+  // Função para buscar empresa pelo CNPJ
+  const buscarEmpresaPorCnpj = async (cnpj) => {
+    const cnpjNumbers = cnpj.replace(/\D/g, "");
+
+    const response = await fetch(`/api/empresa/buscar/${cnpjNumbers}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Erro ao buscar empresa: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    return data.id;
+  };
+
+  // criar gestor
+  const criarGestor = async (empresaId) => {
+    const funcionarioPayload = {
+      empresaId: empresaId,
+      funcaoId: 2,
+      nome: gestorData.nome,
+      sobrenome: gestorData.sobrenome,
+      status: "ATIVO",
+      email: gestorData.email,
+      dataContratacao: getCurrentDate(),
+    };
+
+    const response = await fetch("/api/funcionario/inserir", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(funcionarioPayload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Erro ao criar gestor: ${response.status}`
+      );
+    }
+
+    return true;
+  };
+
   const handleAvançar = () => {
     if (validateEmpresaFields()) {
       setCurrentStep(2);
@@ -171,6 +270,7 @@ const SignUp = ({ onBack, onLogoClick }) => {
   };
 
   const handleVoltar = () => {
+    setApiError(""); // Limpa erros ao voltar
     if (currentStep === 2) {
       // Se estiver na tela do gestor, volta para a tela da empresa
       setCurrentStep(1);
@@ -180,14 +280,73 @@ const SignUp = ({ onBack, onLogoClick }) => {
     }
   };
 
-  const handleConcluir = () => {
-    if (validateGestorFields()) {
-      //  IMPLEMENTAR QUANDO ESTIVER PRONTA A API PARA USARLA PARA SALVAR OS DADOS
-      console.log("Dados da empresa:", empresaData);
-      console.log("Dados do gestor:", gestorData);
-      alert("Cadastro concluído com sucesso!");
+  const handleSuccessBack = () => {
+    // Volta para a tela inicial e limpa os dados
+    setEmpresaData({
+      nome: "",
+      cnpj: "",
+      capacidade: "",
+      sigla: "",
+      email: "",
+    });
+    setGestorData({
+      nome: "",
+      sobrenome: "",
+      email: "",
+      genero: "",
+    });
+    setCurrentStep(1);
+    setShowSuccess(false);
+    onBack();
+  };
+
+  const handleSuccessLogin = () => {
+    // Aqui você pode implementar a navegação para a tela de login
+    // Por enquanto, vou apenas limpar os dados e voltar
+    handleSuccessBack();
+  };
+
+  const handleConcluir = async () => {
+    // Valida os campos da empresa e do gestor
+    if (!validateEmpresaFields() || !validateGestorFields()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setApiError("");
+
+    try {
+      // 1. Cria a empresa
+      console.log("Criando empresa...");
+      await criarEmpresa();
+      console.log("Empresa criada com sucesso!");
+
+      // 2. Busca a empresa pelo CNPJ para obter o ID
+      console.log("Buscando empresa pelo CNPJ...");
+      const empresaId = await buscarEmpresaPorCnpj(empresaData.cnpj);
+      console.log("Empresa encontrada com ID:", empresaId);
+
+      // 3. Cria o gestor usando o empresaId obtido
+      console.log("Criando gestor...");
+      await criarGestor(empresaId);
+      console.log("Gestor criado com sucesso!");
+
+      // Mostra a tela de sucesso
+      setShowSuccess(true);
+    } catch (error) {
+      setApiError(error.message || "Erro no cadastro. Tente novamente.");
+      console.error("Erro no cadastro:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Se estiver mostrando a tela de sucesso, renderiza ela
+  if (showSuccess) {
+    return (
+      <SuccessScreen onLogin={handleSuccessLogin} onBack={handleSuccessBack} />
+    );
+  }
 
   return (
     <div className="signup-container">
@@ -320,12 +479,28 @@ const SignUp = ({ onBack, onLogoClick }) => {
                 </div>
               </div>
             </div>
+            {apiError && (
+              <div
+                className="error-message-api"
+                style={{
+                  color: "#e74c3c",
+                  marginBottom: "16px",
+                  padding: "12px",
+                  backgroundColor: "#fee",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+              >
+                {apiError}
+              </div>
+            )}
             <button
               className="signup-button"
               type="button"
               onClick={handleAvançar}
+              disabled={isLoading}
             >
-              Avançar
+              {isLoading ? "Salvando..." : "Avançar"}
             </button>
           </div>
         ) : (
@@ -431,12 +606,28 @@ const SignUp = ({ onBack, onLogoClick }) => {
                 </div>
               </div>
             </div>
+            {apiError && (
+              <div
+                className="error-message-api"
+                style={{
+                  color: "#e74c3c",
+                  marginBottom: "16px",
+                  padding: "12px",
+                  backgroundColor: "#fee",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                }}
+              >
+                {apiError}
+              </div>
+            )}
             <button
               className="signup-button-concluir"
               type="button"
               onClick={handleConcluir}
+              disabled={isLoading}
             >
-              Concluir cadastro
+              {isLoading ? "Salvando..." : "Concluir cadastro"}
             </button>
           </div>
         )}
