@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import logo from "../assets/logo.svg";
 import "./SignUp.css";
 import SuccessScreen from "./SuccessScreen";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore";
+import { auth, db } from "../firebase/config";
 
 // URL da API - usa variável de ambiente em produção ou proxy em desenvolvimento
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -64,6 +67,7 @@ const SignUp = ({ onBack, onLogoClick }) => {
     nome: "",
     sobrenome: "",
     email: "",
+    senha: "",
     genero: "",
   });
 
@@ -163,6 +167,13 @@ const SignUp = ({ onBack, onLogoClick }) => {
       isValid = false;
     } else if (!validateEmail(gestorData.email)) {
       errors.email = "Email inválido";
+      isValid = false;
+    }
+    if (!gestorData.senha.trim()) {
+      errors.senha = "Este campo é obrigatório";
+      isValid = false;
+    } else if (gestorData.senha.length < 6) {
+      errors.senha = "A senha deve ter pelo menos 6 caracteres";
       isValid = false;
     }
     if (!gestorData.genero.trim()) {
@@ -312,6 +323,7 @@ const SignUp = ({ onBack, onLogoClick }) => {
       nome: "",
       sobrenome: "",
       email: "",
+      senha: "",
       genero: "",
     });
     setCurrentStep(1);
@@ -320,8 +332,6 @@ const SignUp = ({ onBack, onLogoClick }) => {
   };
 
   const handleSuccessLogin = () => {
-    // Aqui você pode implementar a navegação para a tela de login
-    // Por enquanto, vou apenas limpar os dados e voltar
     handleSuccessBack();
   };
 
@@ -373,11 +383,45 @@ const SignUp = ({ onBack, onLogoClick }) => {
       await criarGestor(empresaId);
       console.log("Gestor criado com sucesso!");
 
+      // 4. Cria usuário no Firebase Auth
+      console.log("Criando usuário no Firebase...");
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        gestorData.email,
+        gestorData.senha
+      );
+      console.log("Usuário criado no Firebase Auth:", userCredential.user.uid);
+
+      // 5. Salva dados do gestor na collection usuarios do Firestore
+      console.log("Salvando dados do gestor no Firestore...");
+      const userData = {
+        uid: userCredential.user.uid,
+        nome: gestorData.nome,
+        sobrenome: gestorData.sobrenome,
+        email: gestorData.email,
+        empresaId: empresaId,
+        status: "ATIVO",
+        dataContratacao: getCurrentDate(),
+      };
+
+      await addDoc(collection(db, "usuarios"), userData);
+      console.log("Dados salvos no Firestore com sucesso!");
+
       // Mostra a tela de sucesso
       setShowSuccess(true);
     } catch (error) {
-      setApiError(error.message || "Erro no cadastro. Tente novamente.");
       console.error("Erro no cadastro:", error);
+
+      // Trata erros específicos do Firebase
+      if (error.code === "auth/email-already-in-use") {
+        setApiError("Este email já está cadastrado. Use outro email.");
+      } else if (error.code === "auth/weak-password") {
+        setApiError("Senha muito fraca. Use uma senha mais forte.");
+      } else if (error.code === "auth/invalid-email") {
+        setApiError("Email inválido. Verifique e tente novamente.");
+      } else {
+        setApiError(error.message || "Erro no cadastro. Tente novamente.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -576,6 +620,20 @@ const SignUp = ({ onBack, onLogoClick }) => {
                   />
                   {gestorErrors.email && (
                     <span className="error-message">{gestorErrors.email}</span>
+                  )}
+                </div>
+                <div className="form-field">
+                  <label htmlFor="gestor-senha">Senha</label>
+                  <input
+                    type="password"
+                    id="gestor-senha"
+                    value={gestorData.senha}
+                    onChange={handleGestorChange}
+                    placeholder="Digite sua senha"
+                    className={gestorErrors.senha ? "error-input" : ""}
+                  />
+                  {gestorErrors.senha && (
+                    <span className="error-message">{gestorErrors.senha}</span>
                   )}
                 </div>
               </div>
