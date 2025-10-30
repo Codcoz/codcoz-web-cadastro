@@ -367,3 +367,177 @@
   background-color: #e6bb00;
   transform: scale(1.02);
 }
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .signup-card {
+    padding: 40px 40px 50px;
+  }
+
+  .progress-line {
+    width: 25vw;
+  }
+
+  .signup-title {
+    font-size: 1.75rem;
+  }
+
+  .form-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Empilhar logo em cima e formulário embaixo */
+@media (max-width: 900px) {
+  .signup-container {
+    flex-direction: column;
+  }
+
+  .signup-sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: auto;
+    padding: 20px 16px 0;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .sidebar-logo {
+    width: 140px;
+    height: auto;
+    justify-content: center;
+  }
+
+  .signup-card {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .signup-container {
+    overflow: auto;
+  }
+
+  .signup-sidebar {
+    width: 100%;
+    min-height: auto;
+    align-items: center;
+    padding: 16px 16px 0;
+  }
+
+  .sidebar-logo {
+    width: 120px;
+    height: auto;
+    justify-content: center;
+  }
+
+  .sidebar-logo img {
+    width: 100%;
+    height: auto;
+  }
+
+  .signup-card {
+    border-radius: 20px 20px 0 0;
+    padding: 28px 20px 36px;
+  }
+
+  .signup-title-container {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .signup-title {
+    font-size: 1.5rem;
+  }
+
+  .back-button-title {
+    position: absolute;
+    left: 8px;
+  }
+
+  .progress-indicator {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .step-circle {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+
+  .step-label {
+    font-size: 0.85rem;
+  }
+
+  .progress-line {
+    width: 35vw;
+    height: 2px;
+    margin-top: 0;
+  }
+
+  .signup-form {
+    align-items: stretch;
+  }
+
+  .form-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-column {
+    gap: 16px;
+  }
+
+  .form-field label,
+  .error-message {
+    margin-left: 0;
+  }
+
+  .radio-group {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .signup-button,
+  .signup-button-concluir {
+    width: 50%;
+    padding: 14px 20px;
+    margin-left: 25%;
+  }
+
+  .signup-button-concluir {
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-logo {
+    width: 100px;
+  }
+
+  .signup-title {
+    font-size: 1.35rem;
+  }
+
+  .step-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+  }
+
+  .progress-line {
+    width: 32vw;
+  }
+
+  .form-field input {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+}
