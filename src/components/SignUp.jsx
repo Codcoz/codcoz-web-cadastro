@@ -196,7 +196,9 @@ const SignUp = ({ onBack, onLogoClick }) => {
       capacidadeEstoque: parseInt(empresaData.capacidade, 10),
     };
 
-    const url = API_BASE_URL ? `${API_BASE_URL}/empresa/inserir` : "/api/empresa/inserir";
+    const url = API_BASE_URL
+      ? `${API_BASE_URL}/empresa/inserir`
+      : "/api/empresa/inserir";
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -219,7 +221,9 @@ const SignUp = ({ onBack, onLogoClick }) => {
   const buscarEmpresaPorCnpj = async (cnpj) => {
     const cnpjNumbers = cnpj.replace(/\D/g, "");
 
-    const url = API_BASE_URL ? `${API_BASE_URL}/empresa/buscar/${cnpjNumbers}` : `/api/empresa/buscar/${cnpjNumbers}`;
+    const url = API_BASE_URL
+      ? `${API_BASE_URL}/empresa/buscar/${cnpjNumbers}`
+      : `/api/empresa/buscar/${cnpjNumbers}`;
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -227,11 +231,18 @@ const SignUp = ({ onBack, onLogoClick }) => {
       },
     });
 
+    // Se não encontrar, retorna null ao invés de lançar erro
+    if (response.status === 404) {
+      return null;
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
+      const err = new Error(
         errorData.message || `Erro ao buscar empresa: ${response.status}`
       );
+      err.status = response.status;
+      throw err;
     }
 
     const data = await response.json();
@@ -250,7 +261,9 @@ const SignUp = ({ onBack, onLogoClick }) => {
       dataContratacao: getCurrentDate(),
     };
 
-    const url = API_BASE_URL ? `${API_BASE_URL}/funcionario/inserir` : "/api/funcionario/inserir";
+    const url = API_BASE_URL
+      ? `${API_BASE_URL}/funcionario/inserir`
+      : "/api/funcionario/inserir";
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -322,6 +335,29 @@ const SignUp = ({ onBack, onLogoClick }) => {
     setApiError("");
 
     try {
+      // 0. Verifica se o CNPJ já existe
+      console.log("Verificando existência do CNPJ...");
+      let existenteId = null;
+      try {
+        existenteId = await buscarEmpresaPorCnpj(empresaData.cnpj);
+      } catch (err) {
+        if (err && err.status === 500) {
+          setApiError(
+            "Este CNPJ já está cadastrado. Verifique e tente novamente."
+          );
+          setIsLoading(false);
+          return;
+        }
+        throw err;
+      }
+      if (existenteId) {
+        setApiError(
+          "Este CNPJ já está cadastrado. Verifique e tente novamente."
+        );
+        setIsLoading(false);
+        return;
+      }
+
       // 1. Cria a empresa
       console.log("Criando empresa...");
       await criarEmpresa();
