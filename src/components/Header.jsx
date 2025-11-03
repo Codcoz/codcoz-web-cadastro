@@ -10,7 +10,15 @@ const Header = ({ onLogoClick }) => {
       </div>
 
       <nav>
-        <button className="login-button">Login</button>
+        <button 
+          className="login-button" 
+          onClick={() => {
+            console.log('Botão de login clicado!');
+            window.location.href = 'https://codcoz-react.onrender.com/';
+          }}
+        >
+          Login
+        </button>
       </nav>
     </header>
   );
