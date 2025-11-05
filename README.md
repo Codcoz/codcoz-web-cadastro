@@ -2,6 +2,10 @@
 
 Aplicação web de cadastro construída com React 19 e Vite 7, integrada ao Firebase (Auth e Firestore). Este repositório contém o front-end da landing page de cadastro da Codcoz, com fluxo de inscrição simples e telas de sucesso.
 
+## 🌐 Acesse o site
+
+[CodCoz - Cadastre sua empresa](https://codcoz-web-cadastro.onrender.com/)
+
 ### Tecnologias
 - React 19
 - Vite 7
